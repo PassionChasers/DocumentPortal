@@ -52,7 +52,7 @@ $stmt->execute($params);
 $total = (int) $stmt->fetch()['c'];
 
 // fetch logs
-$sql = 'SELECT l.*, u.username, d.name as document_name FROM logs l LEFT JOIN users u ON l.user_id = u.id LEFT JOIN documents d ON l.document_id = d.id' . $where_sql . ' ORDER BY l.timestamp DESC LIMIT ? OFFSET ?';
+$sql = 'SELECT l.*, u.username, COALESCE(l.document_name, d.name) as document_name FROM logs l LEFT JOIN users u ON l.user_id = u.id LEFT JOIN documents d ON l.document_id = d.id' . $where_sql . ' ORDER BY l.timestamp DESC LIMIT ? OFFSET ?';
 $stmt = $pdo->prepare($sql);
 
 $exec_params = $params;
@@ -76,7 +76,7 @@ foreach ($rows as $r) {
     $logs[] = [
         'id' => $r['id'],
         'timestamp' => $r['timestamp'],
-        'timestamp_formatted' => date('M d, Y H:i:s', strtotime($r['timestamp'])),
+        'timestamp_formatted' => format_nepal($r['timestamp'], 'M d, Y H:i:s'),
         'user_id' => $r['user_id'],
         'username' => $r['username'],
         'action' => $r['action'],

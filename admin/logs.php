@@ -60,7 +60,7 @@ $total_pages = ceil($total_logs / $per_page);
 
 // Get logs
 $sql = '
-    SELECT l.*, u.username, d.name as document_name 
+    SELECT l.*, u.username, COALESCE(l.document_name, d.name) as document_name 
     FROM logs l 
     LEFT JOIN users u ON l.user_id = u.id 
     LEFT JOIN documents d ON l.document_id = d.id 
@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <?php else: ?>
                     <?php foreach ($logs as $log): ?>
                         <tr>
-                            <td><?= date('M d, Y H:i:s', strtotime($log['timestamp'])) ?></td>
+                            <td><?= format_nepal($log['timestamp'], 'M d, Y H:i:s') ?></td>
                             <td><?= h($log['username']) ?></td>
                             <td>
                                 <span class="badge badge-action">

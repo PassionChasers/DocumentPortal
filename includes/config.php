@@ -39,8 +39,43 @@ function is_admin() {
 function h($s) { return htmlspecialchars($s, ENT_QUOTES, 'UTF-8'); }
 
 function log_action($pdo, $user_id, $document_id, $action) {
-    $stmt = $pdo->prepare('INSERT INTO logs (user_id, document_id, action) VALUES (?, ?, ?)');
-    $stmt->execute([$user_id, $document_id, $action]);
+    // Ensure logs table has document_name column (add if missing)
+    try {
+        $col = $pdo->query("SHOW COLUMNS FROM logs LIKE 'document_name'")->fetch();
+        if (!$col) {
+            $pdo->exec("ALTER TABLE logs ADD COLUMN document_name VARCHAR(255) DEFAULT NULL AFTER document_id");
+        }
+    } catch (Exception $e) {
+        // ignore migration errors
+    }
+
+    // If a document_id is provided, try to resolve its current name (store snapshot)
+    $doc_name = null;
+    if ($document_id) {
+        try {
+            $s = $pdo->prepare('SELECT name FROM documents WHERE id = ?');
+            $s->execute([$document_id]);
+            $r = $s->fetch();
+            if ($r) $doc_name = $r['name'];
+        } catch (Exception $e) {
+            // ignore
+        }
+    }
+
+    $stmt = $pdo->prepare('INSERT INTO logs (user_id, document_id, document_name, action) VALUES (?, ?, ?, ?)');
+    $stmt->execute([$user_id, $document_id, $doc_name, $action]);
+}
+
+// Format a datetime string to Nepal timezone (Asia/Kathmandu)
+function format_nepal($datetime_str, $format = 'M d, Y H:i:s') {
+    if (!$datetime_str) return '';
+    try {
+        $dt = new DateTime($datetime_str);
+        $dt->setTimezone(new DateTimeZone('Asia/Kathmandu'));
+        return $dt->format($format);
+    } catch (Exception $e) {
+        return $datetime_str;
+    }
 }
 
 // Ensure uploads directory exists

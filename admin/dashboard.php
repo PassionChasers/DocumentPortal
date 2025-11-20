@@ -3,7 +3,7 @@ require_once '../includes/config.php';
 require_login();
 
 if (!is_admin()) {
-    header('Location: /user/dashboard.php');
+    header('Location: ' . BASE_PATH . '/user/dashboard.php');
     exit;
 }
 
@@ -108,7 +108,7 @@ include '../includes/header.php';
                                         <?= h($doc['name']) ?>
                                     </td>
                                     <td><?= h($doc['uploaded_by_name']) ?></td>
-                                    <td><?= date('M d, Y H:i', strtotime($doc['created_at'])) ?></td>
+                                    <td><?= format_nepal($doc['created_at'], 'M d, Y H:i') ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -139,7 +139,7 @@ include '../includes/header.php';
                                             <strong><?= h($activity['document_name']) ?></strong>
                                         <?php endif; ?>
                                     </p>
-                                    <small><?= date('M d, Y H:i', strtotime($activity['timestamp'])) ?></small>
+                                    <small><?= format_nepal($activity['timestamp'], 'M d, Y H:i') ?></small>
                                 </div>
                             </div>
                         <?php endforeach; ?>
